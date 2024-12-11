@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Calculator.css';
 
 const Calculator = () => {
@@ -69,7 +69,13 @@ const Calculator = () => {
 
     const calculateResult = useCallback(() => {
         try {
-            const evaluatedResult = eval(input.replace(/x/g, '*'));
+            // Replace 'x' with '*' for multiplication and sanitize input
+            const sanitizedInput = input.replace(/x/g, '*');
+
+            // Use Function constructor to evaluate the expression safely
+            const evaluateExpression = new Function(`return (${sanitizedInput});`);
+            const evaluatedResult = evaluateExpression();
+
             updateState({
                 result: evaluatedResult,
                 history: [...history, { query: input, result: evaluatedResult }],
@@ -93,7 +99,7 @@ const Calculator = () => {
     const toggleSidebarAndPanel = useCallback(() => {
         updateState({
             toggleSidebar: !toggleSidebar,
-            showHistory: !showHistory,
+            showHistory: true,
             showMemory: false
         });
     }, [toggleSidebar, showHistory, updateState]);
@@ -115,18 +121,22 @@ const Calculator = () => {
     }, [updateState]);
 
     const closeModal = useCallback(() => {
-        updateState({ toggleSidebar: false });
+        updateState({ toggleSidebar: false, history: true });
     }, [updateState]);
 
     return (
         <div className="calculator">
-            <button type='button' onClick={toggleSidebarAndPanel}>toggle</button>
+            <div className='toggalButton'>
+                <button type='button' className='btn' onClick={toggleSidebarAndPanel}>
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
             <div className="display">{input}</div>
 
             {toggleSidebar ? (
                 <>
-                    <div className='button-wrapper'>
-                        <span className='buttons'>
+                    <div className='button-container'>
+                        <span className='button-wrapper'>
                             <button className='history-button' onClick={() => updateState({ showHistory: true, showMemory: false })}>
                                 History
                             </button>
@@ -134,22 +144,24 @@ const Calculator = () => {
                                 Memory
                             </button>
                         </span>
-                        <span onClick={closeModal}>
+                        <button className='btn' onClick={closeModal}>
                             X
-                        </span>
+                        </button>
                     </div>
 
                     {showHistory && (
                         <div className="history-panel">
-                            <h3>History</h3>
-                            <button onClick={() => updateState({ history: [] })}>
-                                Clear History
-                            </button>
-                            <ul>
-                                {history.map((entry, index) => (
-                                    <li key={index}>{entry.query} = {entry.result}</li>
+                            <ul className='history-list'>
+                                {history?.map((entry, index) => (
+                                    <li className='history-list-item' key={index}>{entry.query} = <br />{entry.result}</li>
                                 ))}
                             </ul>
+                            <span>
+
+                                <button className='btn' onClick={() => updateState({ history: [] })}>
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </span>
                         </div>
                     )}
 
@@ -168,7 +180,7 @@ const Calculator = () => {
                     <button className='bold-text' onClick={clearMemory}>MC</button>
                     <button onClick={clearEnd}>CE</button>
                     <button onClick={clearAll}>C</button>
-                    <button onClick={clearEnd}>←</button>
+                    <button onClick={clearEnd}><i class="fa-solid fa-delete-left"></i></button>
                     <button onClick={() => handleButtonClick('/')}>/</button>
                     <button onClick={() => handleButtonClick('7')}>7</button>
                     <button onClick={() => handleButtonClick('8')}>8</button>
@@ -185,7 +197,7 @@ const Calculator = () => {
                     <button onClick={() => handleButtonClick('')}></button>
                     <button onClick={() => handleButtonClick('0')}>0</button>
                     <button onClick={() => handleButtonClick('.')}>.</button>
-                    <button onClick={calculateResult}>=</button>
+                    <button className='equltobutton' onClick={calculateResult}>=</button>
                 </div>
             )}
         </div>
