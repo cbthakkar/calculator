@@ -121,7 +121,7 @@ const Calculator = () => {
     }, [updateState]);
 
     const closeModal = useCallback(() => {
-        updateState({ toggleSidebar: false, history: true });
+        updateState({ toggleSidebar: false, showHistory: true });
     }, [updateState]);
 
     return (
